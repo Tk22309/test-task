@@ -23,9 +23,8 @@ def log_line(text):
         f.write(text.rstrip() + "\n")
 
 def ffmpeg_mp3_to_wav(mp3_path, wav_path):
-    """
-    Конвертація через ffmpeg у WAV (моно, 16 кГц, PCM 16-bit little endian).
-    """
+
+    #Конвертація через ffmpeg у WAV (моно, 16 кГц, PCM 16-bit little endian).
     cmd = [
         "ffmpeg", "-y",
         "-i", mp3_path,
@@ -34,7 +33,6 @@ def ffmpeg_mp3_to_wav(mp3_path, wav_path):
         "-sample_fmt", "s16",
         wav_path
     ]
-    # Приховуємо вивід ffmpeg
     try:
         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except FileNotFoundError:
@@ -43,10 +41,10 @@ def ffmpeg_mp3_to_wav(mp3_path, wav_path):
         raise RuntimeError(f"Помилка ffmpeg при конвертації {os.path.basename(mp3_path)}: {e}")
 
 def transcribe_wav_vosk(wav_path, model):
-    """
-    Транскрибує WAV (16kHz, mono, s16le) за допомогою Vosk.
-    Повертає текст (str).
-    """
+    
+    #Транскрибує WAV (16kHz, mono, s16le) за допомогою Vosk.
+    #Повертає str
+    
     with wave.open(wav_path, "rb") as wf:
         if wf.getnchannels() != 1 or wf.getframerate() != 16000 or wf.getsampwidth() != 2:
             raise RuntimeError(f"WAV має бути mono/16kHz/16-bit: {os.path.basename(wav_path)}")
@@ -63,11 +61,10 @@ def transcribe_wav_vosk(wav_path, model):
                 res = json.loads(rec.Result())
                 result_texts.append(res.get("text", ""))
 
-        # фінальний шматок
         final_res = json.loads(rec.FinalResult())
         result_texts.append(final_res.get("text", ""))
 
-    # Склеюємо з пробілами, чистимо зайві
+    # чистка від зайвоъ табуляції
     text = " ".join(t.strip() for t in result_texts if t.strip())
     return text.strip()
 
@@ -76,21 +73,20 @@ def process_calls_folder():
 
     # Завантажуємо модель Vosk один раз
     if not os.path.isdir(MODEL_PATH):
-        log_line(f"❌ Модель не знайдено за шляхом: {MODEL_PATH}")
-        print(f"❌ Модель не знайдено за шляхом: {MODEL_PATH}")
+        log_line(f"Модель не знайдено")
+        print(f"Модель не знайдено")
         return
-    print("⏳ Завантаження моделі Vosk...")
+    print(" Завантаження моделі Vosk")
     model = Model(MODEL_PATH)
-    print("✅ Модель Vosk завантажено.")
+    print("Модель Vosk завантажено.")
 
     for filename in os.listdir(CALLS_DIR):
         file_path = os.path.join(CALLS_DIR, filename)
 
-        # Пропускаємо папки та файл логів
         if os.path.isdir(file_path) or filename == os.path.basename(LOG_PATH):
             continue
 
-        # Перевіряємо формат
+        # додав перевірку тільки для того щоб якщо випадково попався інший файл то програма не зламалась
         if not filename.lower().endswith(".mp3"):
             log_line(f"Файл {filename} не відповідає нашому формату")
             continue
@@ -99,24 +95,25 @@ def process_calls_folder():
         wav_path = os.path.join(CALLS_DIR, base + ".wav")
         txt_path = os.path.join(CALLS_DIR, base + ".txt")
 
-        # 1) Конвертація MP3 → WAV
+        # MP3 → WAV
         try:
             ffmpeg_mp3_to_wav(file_path, wav_path)
-            print(f"✅ Конвертовано: {filename} → {os.path.basename(wav_path)}")
+            print(f"Конвертовано: {filename} → {os.path.basename(wav_path)}")
         except Exception as e:
             log_line(f"Помилка конвертації {filename}: {e}")
             continue
 
-        # 2) Транскрипція WAV → TXT (Vosk)
+        # Транскрипція WAV → TXT (Vosk)
         try:
             text = transcribe_wav_vosk(wav_path, model)
             with open(txt_path, "w", encoding="utf-8") as f:
                 f.write(text + "\n")
-            print(f"📝 Транскрибовано: {os.path.basename(txt_path)}")
+            print(f"Транскрибовано: {os.path.basename(txt_path)}")
         except Exception as e:
             log_line(f"Помилка транскрипції {os.path.basename(wav_path)}: {e}")
 
-    print(f"\n🔹 Готово. Логи: {LOG_PATH}")
+    print("\nГотово")
 
 if __name__ == "__main__":
     process_calls_folder()
+
