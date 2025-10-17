@@ -7,15 +7,12 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.cell.rich_text import CellRichText, TextBlock
 from openpyxl.cell.text import InlineFont
 
-# === OpenAI ключ у коді (як ти хотів) ===
 API_KEY = "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"
 client = OpenAI(api_key=API_KEY)
 
 
 def Give_score(text: str, max_retries: int = 3, delay: float = 5.0) -> str:
-    
-    #GPT-оцінка 
-    messages = [
+    messages = [#повыдомлення для чату джпт для отримання оцінки
         {
             "role": "system",
             "content": (
@@ -203,5 +200,6 @@ def write_json_to_xlsx(
 
     wb.save(xlsx_path)
     return row
+
 
 
