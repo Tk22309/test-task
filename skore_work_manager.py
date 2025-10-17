@@ -65,13 +65,13 @@ def Give_score(text: str, max_retries: int = 3, delay: float = 5.0) -> str:
             )
             raw = resp.choices[0].message.content or ""
             clean_json = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.DOTALL)
-            print(f"[✓] Отримано відповідь ({len(clean_json)} символів)")
+            print(f"Отримано відповідь ({len(clean_json)} символів)")
             return clean_json
 
         except Exception as e:
-            print(f"[!] Помилка GPT: {e}")
+            print(f"Помилка GPT: {e}")
             if attempt < max_retries:
-                print(f"[→] Повтор через {delay} секунд...")
+                print(f" Повтор через {delay} секунд...")
                 time.sleep(delay)
             else:
                 print("[×] Досягнуто межі повторів. Пропускаємо цей файл.")
@@ -200,6 +200,7 @@ def write_json_to_xlsx(
 
     wb.save(xlsx_path)
     return row
+
 
 
 
