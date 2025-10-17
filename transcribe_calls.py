@@ -30,7 +30,6 @@ def ensure_ffmpeg():
 
 
 def norm_and_chunk(input_path: Path, out_dir: Path, chunk_seconds: int = CHUNK_SECONDS) -> list[Path]:
-    
     #Нормалізуємо аудіо + додаємо 200 мс затримки на початку,
     #конвертуємо в моно WAV 44.1кГц 
     
@@ -68,7 +67,7 @@ def norm_and_chunk(input_path: Path, out_dir: Path, chunk_seconds: int = CHUNK_S
 
 
 def transcribe_chunk(chunk_path: Path) -> str:
-    #Надсилаємо шматок у Whisper-1 і повертаємо чистий текст.
+    #Надсилаємо шматок у Whisper-1 і повертаємо чистий текст
     with open(chunk_path, "rb") as f:
         resp = client.audio.transcriptions.create(
             model=MODEL,
@@ -150,7 +149,7 @@ def main():
         print(f"[!] Папка не знайдена: {CALLS_DIR.resolve()}")
         sys.exit(1)
 
-    # обробляємо лише mp3/wav; якщо .txt уже є — файл пропускається
+    # обробляємо лише mp3/wav
     audio_files = [p for p in sorted(CALLS_DIR.iterdir()) if p.is_file() and p.suffix.lower() in SUPPORTED_EXTS]
     if not audio_files:
         print("[i] У 'calls' немає .mp3/.wav")
@@ -159,11 +158,12 @@ def main():
     for p in audio_files:
         process_file(p)
 
-    print("[✓] Усі доступні файли оброблено.")
+    print("Усі доступні файли оброблено.")
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
+
         sys.exit(0)
